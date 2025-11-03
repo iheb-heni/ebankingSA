@@ -1,0 +1,80 @@
+
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { User } from '../../models/user.model';
+
+@Component({
+  selector: 'app-navbar',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  template: `
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container">
+        <a class="navbar-brand" routerLink="/">E-banking</a>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            @if (isLoggedIn) {
+              <li class="nav-item">
+                <a class="nav-link" routerLink="/dashboard">Dashboard</a>
+              </li>
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-bs-toggle="dropdown">
+                  {{ currentUser?.name }}
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <button class="dropdown-item" (click)="logout()">
+                      Déconnexion
+                    </button>
+                  </li>
+                </ul>
+              </li>
+            } @else {
+              <li class="nav-item">
+                <a class="nav-link" routerLink="/login">Connexion</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" routerLink="/register">Inscription</a>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+    </nav>
+  `
+})
+export class NavbarComponent {
+  private authService = inject(AuthService);
+
+  isLoggedIn = false;
+  currentUser: User | null = null;
+
+  constructor() {
+    this.authService.isLoggedIn$.subscribe(
+      isLoggedIn => this.isLoggedIn = isLoggedIn
+    );
+
+    this.authService.currentUser$.subscribe(
+      user => this.currentUser = user
+    );
+  }
+
+  logout(): void {
+    this.authService.logout().subscribe();
+  }
+}
